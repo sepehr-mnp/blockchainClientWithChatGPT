@@ -1,0 +1,40 @@
+package main
+
+import (
+    "context"
+    "fmt"
+    "math/big"
+ "github.com/ethereum/go-ethereum/ethclient"
+ "github.com/ethereum/go-ethereum/accounts/abi/bind"
+ "github.com/ethereum/go-ethereum/common"
+)
+
+func main() {
+ client, err := ethclient.Dial("http://localhost:8545")
+ if err != nil {
+  fmt.Println("Error creating client: ", err)
+  return
+ }
+ 
+ // set address, value, and private key
+ address := common.HexToAddress("0xca35b7d915458ef540ade6068dfe2f44e8fa733c")
+ value := big.NewInt(1000000000000000)
+ privKey := "fad9c8855b740a0b7ed4c221dbad0f33a83a49cad6b3fe8d5817ac83d38b6a19"
+
+ // sign the transaction
+ auth, err := bind.NewTransactor(strings.NewReader(privKey), "1")
+ if err != nil {
+  fmt.Printf("Error creating auth: %s\n", err)
+  return
+ }
+
+ // create and send the transaction
+ tx, err := client.SendTransaction(context.Background(), auth, address, value, nil, nil)
+ if err != nil {
+  fmt.Printf("Error sending transaction: %s\n", err)
+  return
+ }
+
+ fmt.Printf("Transaction sent: %s\n", tx.Hash().Hex())
+
+}
