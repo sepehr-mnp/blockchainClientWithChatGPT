@@ -1,71 +1,53 @@
-
 package main
 
 import (
-    "context"
-    "fmt"
- "log"
+ "context"
+ "fmt"
+ "math/big"
 
-    "github.com/ethereum/go-ethereum/common"
-    "github.com/ethereum/go-ethereum/crypto"
-    "github.com/ethereum/go-ethereum/ethclient"
-    "github.com/ethereum/go-ethereum/params"
-    "github.com/ethereum/go-ethereum/rlp"
-    "github.com/ethereum/go-ethereum/accounts/abi/bind"
-    "github.com/ethereum/go-ethereum/core/types"
+ "github.com/ethereum/go-ethereum/accounts/abi/bind"
+ "github.com/ethereum/go-ethereum/common"
+ "github.com/ethereum/go-ethereum/core/types"
+ "github.com/ethereum/go-ethereum/ethclient"
 )
 
 func main() {
-    // Create an authorized transactor and signer
-    client, err := ethclient.Dial("http://localhost:8545")
+ // Assuming you already have an Ethereum client
+ client, err := ethclient.Dial("https://mainnet.infura.io") // connect to an ethereum node
  if err != nil {
-        log.Fatal(err)
-    }
-
- fmt.Printf("Connected to Ethereum node\n")
-
-    privateKey, err := crypto.HexToECDSA("yourprivatekey")
-    if err != nil {
-        log.Fatal(err)
-    }
-
- fmt.Printf("Loaded private key\n")
-
-    publicKey := privateKey.Public()
-    publicKeyECDSA, ok := publicKey.(ecdsa.PublicKey)
-    if !ok {
-        log.Fatal("error casting public key to ECDSA")
-    }
-
-    fromAddress := crypto.PubkeyToAddress(publicKeyECDSA)
-
-    nonce,  := client.PendingNonceAt(context.Background(), fromAddress)
-
-    gasPrice,  := client.SuggestGasPrice(context.Background())
-    gasLimit := uint64(21000)
-
-    // Build the transaction
-    tx := types.NewTransaction(nonce, toAddress, amount, gasLimit, gasPrice, nil)
-
- fmt.Printf("Created transaction\n")
-
-    // Sign the transaction
-    signedTx, err := types.SignTx(tx, types.HomesteadSigner{}, privateKey)
-    if err != nil {
-        log.Fatal(err)
-    }
- 
- fmt.Printf("Signed transaction\n")
-
-    // Print the transaction
-    fmt.Printf("Raw Transaction: 0x%x\n", signedTx.RawSignatureValues())
-
-    // Send the transaction 
-    err = client.SendTransaction(context.Background(), signedTx)
-    if err != nil {
-        log.Fatal(err)
+  panic(err)
  }
- 
- fmt.Printf("Submitted transaction\n")
- fmt.Printf("Transaction Hash: 0x%x\n", signedTx.Hash().Hex())
+
+ // Get the private key
+ privateKey := "yourprivatekey" // replace with real private key
+
+ // Create an authorized transactor
+ auth := bind.NewKeyedTransactor(common.HexToAddress(privateKey2:))
+
+ // Create and sign a transaction
+ nonce, err := client.PendingNonceAt(context.Background(), auth.From) // get the account nonce
+ if err != nil {
+  panic(err)
+ }
+
+ // Set the transaction values
+ value := big.NewInt(1000000000000000000) // in wei (1 eth)
+ gasPrice, err := client.SuggestGasPrice(context.Background())
+ if err != nil {
+  panic(err)
+ }
+ gasLimit := uint64(21000) // in units
+ toAddress := common.HexToAddress("0xAddress") // address of the recipient
+
+ // Create a new transaction
+ tx := types.NewTransaction(nonce, toAddress, value, gasLimit, gasPrice, nil)
+
+ // Sign the transaction
+ signedTx, err := auth.Signer(types.HomesteadSigner{}, auth.From, tx)
+ if err != nil {
+  panic(err)
+ }
+
+ // Print the signed transaction
+ fmt.Printf("%x\n", signedTx.Encode())
 }
